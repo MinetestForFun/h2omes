@@ -422,6 +422,13 @@ minetest.register_chatcommand("setpit", {
 	end,
 })
 
+minetest.register_chatcommand("homegui", {
+	description = "Show home formspec",
+	privs = {home=true},
+	func = function (name, params)
+		h2omes.show_formspec_home(name)
+	end,
+})
 
 if (minetest.get_modpath("unified_inventory")) then
 	unified_inventory.register_button("home_formspec", {
