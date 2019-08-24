@@ -86,7 +86,7 @@ function h2omes.set_home(name, home_type, pos)
 	if not pos then
 		local player = minetest.get_player_by_name(name)
 		if not player then return end
-		pos = player:getpos()
+		pos = player:get_pos()
 	end
 	if not pos then return false end
 	if pos.y < -19600 and h2omes.have_nether then
@@ -95,7 +95,7 @@ function h2omes.set_home(name, home_type, pos)
 		h2omes.homes[name][home_type].real = pos
 	end
 	minetest.chat_send_player(name, home_type.." set!")
-	minetest.sound_play("dingdong",{to_player=name, gain = 1.0})
+	minetest.sound_play("dingdong", {to_player = name, gain = 1.0})
 	h2omes.save_homes(name)
 	return true
 end
@@ -106,7 +106,7 @@ function h2omes.get_home(name, home_type)
 	h2omes.check(name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return nil end
-	local pos = player:getpos()
+	local pos = player:get_pos()
 	if not pos then return nil end
 	local status = "real"
 	if pos.y < -19600 and h2omes.have_nether then
@@ -122,11 +122,11 @@ end
 function h2omes.getspawn(name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return nil end
-	local pos = player:getpos()
+	local pos = player:get_pos()
 	if not pos then return nil end
 	local spawn_pos
 	if pos.y < -19600 and h2omes.have_nether then
-		spawn_pos = minetest.string_to_pos(minetest.setting_get("nether_static_spawnpoint") or "")
+		spawn_pos = minetest.string_to_pos(minetest.settings:get("nether_static_spawnpoint") or "")
 	elseif minetest.setting_get_pos("static_spawnpoint") then
 		spawn_pos = minetest.setting_get_pos("static_spawnpoint")
 	end
@@ -141,9 +141,9 @@ function h2omes.to_spawn(name)
 	local spawn_pos = h2omes.getspawn(name)
 	if spawn_pos then
 		minetest.chat_send_player(name, "Teleporting to spawn...")
-		player:setpos(spawn_pos)
-		minetest.sound_play("teleport", {to_player=name, gain = 1.0})
-		minetest.log("action","Player ".. name .." respawned. Next allowed respawn in ".. h2omes.time_spawn .." seconds.")
+		player:set_pos(spawn_pos)
+		minetest.sound_play("teleport", {to_player = name, gain = 1.0})
+		minetest.log("action", "Player ".. name .." respawned. Next allowed respawn in ".. h2omes.time_spawn .." seconds.")
 		return true
 	else
 		minetest.chat_send_player(name, "ERROR: No spawn point is set on this server!")
@@ -157,7 +157,7 @@ function h2omes.to_home(name, home_type)
 	h2omes.check(name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return false end
-	local pos = player:getpos()
+	local pos = player:get_pos()
 	if not pos then return false end
 	local status = "real"
 	if pos.y < -19600 and h2omes.have_nether then
@@ -177,11 +177,11 @@ end
 function h2omes.to_player(name, to_pos, to_name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return false end
-	local from_pos = player:getpos()
+	local from_pos = player:get_pos()
 	if to_pos then
 		if h2omes.can_teleport(from_pos, to_pos) then
 			minetest.chat_send_player(name, "Teleporting to player "..to_name)
-			player:setpos(to_pos)
+			player:set_pos(to_pos)
 			minetest.sound_play("teleport", {to_player=name, gain = 1.0})
 			return true
 		else
@@ -196,9 +196,9 @@ end
 
 
 function h2omes.update_pos(name, pos, from_name)
-	from_players[name] = {name=from_name, pos=pos}
+	from_players[name] = {name = from_name, pos = pos}
 	minetest.chat_send_player(name, from_name .." sent you their position to teleport")
-	minetest.sound_play("dingdong",{to_player=name, gain = 0.8})
+	minetest.sound_play("dingdong", {to_player = name, gain = 0.8})
 	return true
 end
 
@@ -223,7 +223,7 @@ function h2omes.show_formspec_home(name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return false end
 	local formspec = {"size[8,9]label[3.15,0;Home Settings]"}
-	local pos = player:getpos()
+	local pos = player:get_pos()
 	--spawn
 	table.insert(formspec, "label[3.45,0.8;TO SPAWN]")
 	local spawn_pos = h2omes.getspawn(name)
@@ -323,7 +323,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		elseif fields["send_to"] then
 			local to_name = tmp_players[name]["select_player"]
 			if not to_name then return end
-			local pos = player:getpos()
+			local pos = player:get_pos()
 			action_timers.wrapper(name, "send_pos_to_player", "to_player_" .. name, h2omes.time_to_player, h2omes.send_pos_to_player, {name, pos, to_name})
 			tmp_players[name] = nil
 		elseif fields["refresh"] then
@@ -377,7 +377,7 @@ minetest.register_chatcommand("spawn", {
 
 minetest.register_chatcommand("home", {
 	description = "Teleport you to your home point",
-	privs = {home=true},
+	privs = {home = true},
 	func = function (name, params)
 		if not h2omes.get_home(name, "home") then
 			minetest.chat_send_player(name, "Set a home using /sethome")
@@ -391,7 +391,7 @@ minetest.register_chatcommand("home", {
 
 minetest.register_chatcommand("sethome", {
 	description = "Set your home point",
-	privs = {home=true},
+	privs = {home = true},
 	func = function (name, params)
 		--h2omes.set_home(name, "home")
 		return action_timers.wrapper(name, "sethome", "sethome_" .. name, h2omes.time_home, h2omes.set_home, {name, "home"})
@@ -401,7 +401,7 @@ minetest.register_chatcommand("sethome", {
 
 minetest.register_chatcommand("pit", {
 	description = "Teleport you to your pit point",
-	privs = {home=true},
+	privs = {home = true},
 	func = function (name, params)
 		if not h2omes.get_home(name, "pit") then
 			minetest.chat_send_player(name, "Set a pit using /setpit")
@@ -415,7 +415,7 @@ minetest.register_chatcommand("pit", {
 
 minetest.register_chatcommand("setpit", {
 	description = "Set your pit point",
-	privs = {home=true},
+	privs = {home = true},
 	func = function (name, params)
 		--h2omes.set_home(name, "pit")
 		return action_timers.wrapper(name, "setpit", "sethome_" .. name, h2omes.time_home, h2omes.set_home, {name, "pit"})
@@ -424,7 +424,7 @@ minetest.register_chatcommand("setpit", {
 
 minetest.register_chatcommand("homegui", {
 	description = "Show home formspec",
-	privs = {home=true},
+	privs = {home = true},
 	func = function (name, params)
 		h2omes.show_formspec_home(name)
 	end,
